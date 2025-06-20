@@ -1,0 +1,187 @@
+import z, { ZodError } from "zod";
+import express, { Request, Response } from "express";
+
+import { Book } from "../Model/book.model";
+import { error } from "console";
+export const bookRoutes = express.Router();
+
+export const createBookSchema = z.object({
+  title: z.string({ required_error: "Title is required" }),
+  author: z.string({ required_error: "Author is required" }),
+  genre: z.enum(
+    ["FICTION", "NON_FICTION", "SCIENCE", "HISTORY", "BIOGRAPHY", "FANTASY"],
+    {
+      required_error: "Genre is required",
+      invalid_type_error: "Invalid genre",
+    }
+  ),
+  isbn: z.string({ required_error: "ISBN is required" }),
+  description: z.string().optional(),
+  copies: z
+    .number({ required_error: "Copies are required" })
+    .min(0, "Copies must be a non-negative integer"),
+  available: z.boolean().optional(),
+});
+
+// Zod Catch Error Handling
+
+bookRoutes.get("/", async (req, res) => {
+  res.send("BookRoutes Paichi Vai!!");
+});
+
+//  Create Post On the server
+
+bookRoutes.post("/createBook", async (req: Request, res: Response) => {
+  try {
+    const zodBody = await createBookSchema.parseAsync(req.body);
+
+    const book = await Book.create(zodBody);
+    await book.save();
+
+    res.status(201).json({
+      sucess: true,
+      message: "Sucessfully Data Created!!",
+      book: book,
+    });
+  } catch (error: any) {
+    if (error.name === "zodError") {
+      return error;
+    }
+
+    res.status(401).json({
+      sucess: false,
+      message: "Somethings is Wrongs",
+      error: error,
+    });
+  }
+});
+
+//  Get All Book
+
+bookRoutes.get("/getAllBooks", async (req: Request, res: Response) => {
+  try {
+    const filter = req.query.filter as string;
+    const sortBy = (req.query.sortBy as string) || "createdAt";
+    const sortOrder = (req.query.sort as string) === "desc" ? -1 : 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    let query = {};
+
+    if (filter) {
+      query = { genre: filter };
+    }
+
+    const books = await Book.find(query)
+      .sort({ [sortBy]: sortOrder })
+      .limit(limit);
+
+    res.json({
+      success: true,
+      message: "Books retrieved successfully",
+      data: books,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to get books", error });
+  }
+});
+
+// specifics book
+
+bookRoutes.get("/:bookId", async (req: Request, res: Response) => {
+  try {
+    const id = req.params.bookId;
+
+    const book = await Book.findById({ _id: id });
+
+    res.status(201).json({
+      sucess: true,
+      message: "Book retrieved successfully",
+      data: book,
+    });
+
+    if (!book) {
+      res.status(404).json({
+        sucess: false,
+        message: "Book Not Found",
+        
+      });
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to get book", error });
+  }
+});
+
+bookRoutes.put("/:bookId", async (req: Request, res: Response) => {
+  try {
+    const id = req.params.bookId;
+    const body = await createBookSchema.parseAsync(req.body);
+
+    const updatedDoc = await Book.findByIdAndUpdate(id, body, { upsert: true });
+
+    res.status(200).json({
+      sucess: true,
+      message: "Book updated successfull",
+      data: updatedDoc,
+    });
+
+    if (!updatedDoc) {
+      res.status(401).json({
+        sucess: false,
+        message: "NO DATA FOUND",
+        error: null,
+      });
+    }
+  } catch (error) {
+     console.log("Somethings Type is Error", error)
+  }
+});
+
+
+
+// book Delete Opearations 
+
+
+bookRoutes.delete('/:bookId', async (req, res) => {
+
+
+  try {
+    
+
+
+    
+  const id = req.params.bookId;
+
+  const deleteBook = await Book.findOneAndDelete({_id:id})
+
+  res.status(404).json({
+    sucess:true,
+    message:`${id} bookId sucessfully deleleted!!1`,
+    data:deleteBook,
+  });
+
+  if(!deleteBook){
+     res.status(404).json({
+      sucess:false,
+      message:"Deleted Failed",
+      error,
+    })
+  }
+
+
+
+
+
+
+  } catch (error) {
+    console.log("ERROR", error)
+    
+  }
+
+})
+
+
+
