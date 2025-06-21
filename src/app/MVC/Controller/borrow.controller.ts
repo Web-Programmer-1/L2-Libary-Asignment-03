@@ -120,6 +120,4 @@ borrowRoutes.get("/", async (req, res) => {
   }
 });
 
-borrowRoutes.get("/", async (req, res) => {
-  res.json("Borrows Routes Paichi Vai!!!");
-});
+
