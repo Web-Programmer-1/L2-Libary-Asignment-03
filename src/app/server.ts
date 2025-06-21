@@ -37,7 +37,7 @@ boostrap();
 
 
 
-app.listen(9000, () => {
+app.listen(config.port, () => {
     console.log(`Express Basic Server Running Test!!`)
 });
 

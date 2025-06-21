@@ -117,18 +117,21 @@ bookRoutes.get("/:bookId", async (req: Request, res: Response) => {
   }
 });
 
+
+
 bookRoutes.put("/:bookId", async (req: Request, res: Response) => {
   try {
     const id = req.params.bookId;
     const body = await createBookSchema.parseAsync(req.body);
 
-    const updatedDoc = await Book.findByIdAndUpdate(id, body, { upsert: true });
+    const updatedDoc = await Book.findByIdAndUpdate(id, body, { upsert: true , new:true});
 
     res.status(200).json({
       sucess: true,
       message: "Book updated successfull",
       data: updatedDoc,
     });
+    
 
     if (!updatedDoc) {
       res.status(401).json({
