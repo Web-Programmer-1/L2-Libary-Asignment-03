@@ -1,4 +1,4 @@
-import z, { ZodError } from "zod";
+import z from "zod";
 import express, { Request, Response } from "express";
 
 import { Book } from "../Model/book.model";
@@ -6,32 +6,34 @@ import { error } from "console";
 export const bookRoutes = express.Router();
 
 export const createBookSchema = z.object({
-  title: z.string({ required_error: "Title is required" }),
-  author: z.string({ required_error: "Author is required" }),
+  title: z.string({ required_error: "Title is required" }).optional(),
+  author: z.string({ required_error: "Author is required" }).optional(),
   genre: z.enum(
     ["FICTION", "NON_FICTION", "SCIENCE", "HISTORY", "BIOGRAPHY", "FANTASY"],
     {
       required_error: "Genre is required",
       invalid_type_error: "Invalid genre",
     }
-  ),
-  isbn: z.string({ required_error: "ISBN is required" }),
+  ).optional(),
+  isbn: z.string({ required_error: "ISBN is required" }).optional(),
   description: z.string().optional(),
   copies: z
     .number({ required_error: "Copies are required" })
-    .min(0, "Copies must be a non-negative integer"),
+    .min(0, "Copies must be a non-negative integer").optional(),
   available: z.boolean().optional(),
 });
 
+
+
+
+
 // Zod Catch Error Handling
 
-bookRoutes.get("/", async (req, res) => {
-  res.send("BookRoutes Paichi Vai!!");
-});
+
 
 //  Create Post On the server
 
-bookRoutes.post("/createBook", async (req: Request, res: Response) => {
+bookRoutes.post("/", async (req: Request, res: Response) => {
   try {
     const zodBody = await createBookSchema.parseAsync(req.body);
 
@@ -58,7 +60,7 @@ bookRoutes.post("/createBook", async (req: Request, res: Response) => {
 
 //  Get All Book
 
-bookRoutes.get("/getAllBooks", async (req: Request, res: Response) => {
+bookRoutes.get("/", async (req: Request, res: Response) => {
   try {
     const filter = req.query.filter as string;
     const sortBy = (req.query.sortBy as string) || "createdAt";
