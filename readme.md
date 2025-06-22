@@ -69,16 +69,7 @@ Helpful for library admins.
 
 
 
--------- Assignment Submission ----------------
 
-
-1.  GitHub Repo Link = 
-
-2.  Vercel Deployment Link =
-
-3. Video Explainations Link =
-
-4. All API Working  (Using Postman Application)
 
 
 
